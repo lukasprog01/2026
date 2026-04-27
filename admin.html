@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Battle Cards — Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>" />
+</head>
+<body>
+
+<div class="admin-page">
+
+  <!-- Login -->
+  <div id="admin-login" class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="admin-login-icon">🔐</div>
+      <h2 class="admin-login-title">Painel Admin</h2>
+      <p class="admin-login-sub">Cat Battle Cards</p>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="admin-pass-input" placeholder="Digite a senha..." onkeydown="if(event.key==='Enter')adminLogin()" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="adminLogin()">Entrar</button>
+      <div id="login-error" class="admin-error" style="display:none"></div>
+      <a href="index.html" class="admin-back-link">← Voltar ao Lobby</a>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="admin-dashboard" style="display:none">
+
+    <header class="admin-header">
+      <span class="admin-header-title">⚙️ Painel do Administrador</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a href="index.html" class="btn btn-secondary btn-sm">🏠 Lobby</a>
+        <button class="btn btn-secondary btn-sm" onclick="adminLogout()">Sair</button>
+      </div>
+    </header>
+
+    <div class="admin-body">
+
+      <!-- PIX Config -->
+      <div class="admin-card">
+        <h3 class="admin-card-title">💸 Configuração do PIX</h3>
+        <p class="admin-card-sub">Quando um jogador comprar a Carta do Rato, verá estas informações para pagar.</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de Chave</label>
+            <select id="pix-key-type" class="form-select">
+              <option value="email">E-mail</option>
+              <option value="phone">Telefone</option>
+              <option value="cpf">CPF</option>
+              <option value="random">Chave Aleatória</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>Chave PIX</label>
+            <input type="text" id="pix-key" class="form-input" placeholder="sua@chave.pix" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:2">
+            <label>Nome do Recebedor <small>(máx. 25 chars)</small></label>
+            <input type="text" id="pix-name" class="form-input" placeholder="Nome completo" maxlength="25" />
+          </div>
+          <div class="form-group">
+            <label>Cidade <small>(máx. 15 chars)</small></label>
+            <input type="text" id="pix-city" class="form-input" placeholder="São Paulo" maxlength="15" />
+          </div>
+        </div>
+
+        <div class="form-group" style="max-width:320px">
+          <label>Nova Senha do Admin <small>(deixe em branco para manter)</small></label>
+          <input type="password" id="pix-new-pass" class="form-input" placeholder="Nova senha..." />
+        </div>
+
+        <button class="btn btn-primary" onclick="savePixConfig()">💾 Salvar Configuração</button>
+        <div id="pix-save-msg" class="admin-save-msg" style="display:none"></div>
+      </div>
+
+      <!-- Asaas Integration -->
+      <div class="admin-card">
+        <h3 class="admin-card-title">⚡ Pagamento Automático — Asaas</h3>
+        <p class="admin-card-sub">
+          Configure sua conta Asaas para aprovar pagamentos automaticamente via webhook,
+          sem precisar confirmar manualmente cada PIX.
+        </p>
+
+        <div id="asaas-local-warn" class="asaas-warn" style="display:none">
+          ⚠️ Você está em modo local (localhost). As configurações do Asaas só funcionam
+          em produção com Firebase Functions ativo.
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ambiente</label>
+            <select id="asaas-env" class="form-select">
+              <option value="sandbox">Sandbox (testes)</option>
+              <option value="production">Produção</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>API Key do Asaas</label>
+          <input type="password" id="asaas-api-key" class="form-input"
+                 placeholder="$aact_..." autocomplete="new-password" />
+          <small style="color:var(--muted);font-size:11px;margin-top:4px">
+            Asaas → Configurações → Integrações → Chave de API
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Token de Autenticação do Webhook <small>(opcional mas recomendado)</small></label>
+          <input type="password" id="asaas-webhook-token" class="form-input"
+                 placeholder="Token criado no painel Asaas..." autocomplete="new-password" />
+          <small style="color:var(--muted);font-size:11px;margin-top:4px">
+            Asaas → Configurações → Integrações → Webhooks → Chave de autenticação
+          </small>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveAsaasConfig()">🔐 Salvar com segurança</button>
+        <div id="asaas-save-msg" class="admin-save-msg" style="display:none"></div>
+
+        <div class="webhook-box" id="webhook-box" style="display:none">
+          <div class="webhook-box-label">📡 URL do Webhook — cole no Asaas</div>
+          <div class="webhook-url-row">
+            <code id="webhook-url-display" class="webhook-url">—</code>
+            <button class="btn-copy-pix" onclick="copyWebhookUrl()">📋 Copiar</button>
+          </div>
+          <small style="color:var(--muted);font-size:11px">
+            Asaas → Configurações → Integrações → Webhooks → URL<br>
+            Eventos a ativar: <strong>PAYMENT_CONFIRMED</strong> e <strong>PAYMENT_RECEIVED</strong>
+          </small>
+        </div>
+      </div>
+
+      <!-- Pending Payments -->
+      <div class="admin-card">
+        <h3 class="admin-card-title">⏳ Pagamentos Pendentes</h3>
+        <p class="admin-card-sub">Pagamentos aguardando confirmação manual (usado quando Asaas não está configurado).</p>
+        <div id="payments-list">
+          <p class="no-payments">Nenhum pagamento pendente.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var local = ['localhost','127.0.0.1',''].includes(location.hostname);
+    function s(src){ document.write('<script src="'+src+'"><\/script>'); }
+    if (local) { s('js/firebase-mock.js'); }
+    else {
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js');
+      s('js/firebase-config.js');
+    }
+  })();
+</script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>

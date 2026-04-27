@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Battle Cards — Batalha!</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>" />
+</head>
+<body>
+
+<div class="game-page">
+
+  <!-- Header -->
+  <header class="game-header">
+    <span class="game-title">🐱 Cat Battle Cards</span>
+    <span id="cards-remaining" class="card-count"></span>
+  </header>
+
+  <!-- Scores -->
+  <div class="scores-area">
+    <div class="score-panel enemy">
+      <div class="score-player-name" id="enemy-name-display">Oponente</div>
+      <div class="score-value" id="enemy-score">100</div>
+      <div class="score-bar-bg"><div class="score-bar" id="enemy-score-bar" style="width:100%"></div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:0 4px;">
+      <span style="font-size:20px;">⚔️</span>
+    </div>
+    <div class="score-panel mine">
+      <div class="score-player-name" id="my-name-display">Você</div>
+      <div class="score-value" id="my-score">100</div>
+      <div class="score-bar-bg"><div class="score-bar" id="my-score-bar" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- Enemy status effects -->
+  <div class="effects-row" id="enemy-effects"></div>
+
+  <!-- Turn indicator -->
+  <div class="turn-indicator enemy-turn" id="turn-indicator">⏳ Carregando...</div>
+
+  <!-- Enemy hand -->
+  <div class="enemy-area">
+    <div class="area-label">
+      🃏 Cartas do oponente
+      <span class="deck-badge" id="enemy-deck-badge">📦 Baralho: –</span>
+    </div>
+    <div class="cards-row" id="enemy-hand"></div>
+  </div>
+
+  <!-- ======================================
+       CAMPO DE BATALHA
+       (espaço reservado para animações 3D)
+  ======================================= -->
+  <div class="battle-field">
+    <span class="battle-field-label">⚔ Campo de Batalha ⚔</span>
+
+    <!-- Slot oponente (esquerda) -->
+    <div class="battle-slot" id="battle-slot-enemy">
+      <div class="battle-slot-empty">Última carta<br>do oponente</div>
+    </div>
+
+    <!-- VS central -->
+    <div class="battle-vs">
+      <div class="battle-vs-text">VS</div>
+      <div class="battle-vs-sub">batalha</div>
+    </div>
+
+    <!-- Slot meu (direita) -->
+    <div class="battle-slot" id="battle-slot-mine">
+      <div class="battle-slot-empty">Sua última<br>carta</div>
+    </div>
+
+    <span class="battle-3d-hint">✦ animações 3d em breve ✦</span>
+  </div>
+
+  <!-- Action log -->
+  <div class="action-log-area" id="action-log">
+    <span style="opacity:.38">Aguardando primeira jogada...</span>
+  </div>
+
+  <!-- My status effects -->
+  <div class="effects-row" id="my-effects"></div>
+
+  <!-- My hand -->
+  <div class="my-area">
+    <div class="area-label">
+      🐾 Suas cartas — toque para selecionar
+      <span class="deck-badge" id="my-deck-badge">📦 Baralho: –</span>
+    </div>
+    <div class="cards-row" id="my-hand"></div>
+  </div>
+
+  <!-- Mouse card (enemy owns it indicator) -->
+  <div style="text-align:center; padding:0 16px;">
+    <div id="mouse-enemy-badge" class="mouse-enemy-badge" style="display:none;">
+      🐭 Oponente tem a Carta do Rato!
+    </div>
+  </div>
+
+  <!-- Mouse card purchase + active badge -->
+  <div class="mouse-card-area">
+    <button class="btn-buy-mouse" id="btn-buy-mouse" onclick="buyMouseCard()">
+      🐭 Comprar Carta do Rato (R$ 1,00)
+    </button>
+    <div class="mouse-active-badge" id="mouse-active-badge">
+      🐭 Rato ativo — próximo ataque anulado!
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-play" id="btn-play-card" disabled onclick="playCard()">
+      ⚔️ Jogar Carta Selecionada
+    </button>
+    <button class="btn btn-skip" id="btn-skip-turn" onclick="handleSkipTurn()">
+      ⏭️ Turno Pulado
+    </button>
+  </div>
+
+</div>
+
+<!-- PIX Payment Modal -->
+<div class="payment-overlay" id="payment-modal" style="display:none">
+  <div class="payment-card">
+    <button class="payment-close-btn" onclick="closePaymentModal()">✕</button>
+
+    <div class="payment-header">
+      <span class="payment-title">🐭 Carta do Rato</span>
+      <span class="payment-badge">R$ 1,00 via PIX</span>
+    </div>
+
+    <!-- Step 1: show QR / key -->
+    <div id="payment-step-pix">
+      <p class="pix-instruction">Escaneie o QR Code ou copie a chave PIX:</p>
+      <div class="pix-qr-wrap">
+        <img id="pix-qr-img" src="" alt="QR Code PIX" width="180" height="180" />
+      </div>
+      <div class="pix-key-row">
+        <span id="pix-key-display" class="pix-key-value">—</span>
+        <button id="btn-copy-pix" class="btn-copy-pix" onclick="copyPixKey()">📋 Copiar</button>
+      </div>
+      <p class="pix-note">⚠️ Envie exatamente <strong>R$ 1,00</strong> e clique abaixo após pagar.</p>
+      <button id="payment-confirm-btn" class="btn btn-primary btn-full" onclick="confirmPayment()">✅ Já paguei!</button>
+    </div>
+
+    <!-- Step 0: creating charge -->
+    <div id="payment-step-loading" style="display:none">
+      <div class="payment-waiting-icon">⚙️</div>
+      <p class="payment-waiting-text">Criando cobrança...</p>
+    </div>
+
+    <!-- Step 2: waiting for admin approval -->
+    <div id="payment-step-waiting" style="display:none">
+      <div class="payment-waiting-icon">⏳</div>
+      <p class="payment-waiting-text">Aguardando confirmação...</p>
+      <p class="payment-waiting-note">O administrador vai confirmar seu PIX em breve.<br>Esta janela fecha automaticamente quando aprovado!</p>
+    </div>
+  </div>
+</div>
+
+<!-- End screen overlay -->
+<div class="end-overlay" id="end-overlay">
+  <div class="end-card">
+    <div style="font-size:58px;margin-bottom:10px" id="end-emoji">🏆</div>
+    <div class="win-title" id="end-title">Fim de Batalha!</div>
+    <div id="end-scores" style="margin-bottom:8px"></div>
+    <div class="end-buttons">
+      <button class="btn btn-primary"   onclick="playAgainBtn()">🔄 Jogar Novamente</button>
+      <button class="btn btn-secondary" onclick="window.location.href='index.html'">🏠 Lobby</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase: mock em localhost, real em produção -->
+<script>
+  (function () {
+    var local = ['localhost','127.0.0.1',''].includes(location.hostname);
+    function s(src){ document.write('<script src="'+src+'"><\/script>'); }
+    if (local) { s('js/firebase-mock.js'); }
+    else {
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+      s('https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js');
+      s('js/firebase-config.js');
+    }
+  })();
+</script>
+<script src="js/cards.js"></script>
+<script src="js/game.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initGame();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cat Battle Cards Online</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐱</text></svg>" />
+</head>
+<body>
+
+<div class="lobby-bg">
+
+  <div class="lobby-header">
+    <div class="lobby-logo">🐱⚔️🐱</div>
+    <h1 class="lobby-title">Cat Battle Cards</h1>
+    <p class="lobby-subtitle">55 gatos mágicos • Batalha em tempo real</p>
+  </div>
+
+  <!-- CREATE GAME -->
+  <div class="lobby-card" id="create-section">
+    <h2>⚔️ Nova Batalha</h2>
+    <h3>Crie uma batalha e envie o link para seu oponente</h3>
+
+    <div class="input-group">
+      <label>Seu nome</label>
+      <input type="text" id="create-name" placeholder="Ex: Mestre dos Gatos" maxlength="24" autocomplete="off" />
+    </div>
+
+    <button class="btn btn-primary" id="btn-create">🐾 Criar Batalha</button>
+
+    <div class="lobby-error" id="lobby-error"></div>
+  </div>
+
+  <!-- WAITING FOR OPPONENT -->
+  <div class="lobby-card" id="waiting-section">
+    <h2>✅ Batalha criada!</h2>
+    <p style="color: var(--text-muted); text-align:center; font-size:14px;">
+      Envie o link abaixo para seu oponente. A batalha começa automaticamente quando ele aceitar.
+    </p>
+
+    <div class="input-group">
+      <label>Link da batalha</label>
+      <div class="link-box">
+        <input type="text" id="battle-link" readonly />
+        <button class="btn btn-outline" id="btn-copy-link">📋 Copiar link</button>
+      </div>
+    </div>
+
+    <div style="text-align:center; padding: 10px 0;">
+      <span class="pulse-dot"></span>
+      <span style="color: var(--text-muted); font-size:14px;">Aguardando oponente...</span>
+    </div>
+
+    <div style="text-align:center;">
+      <span class="game-id-badge" id="battle-link-id"></span>
+    </div>
+  </div>
+
+  <!-- JOIN GAME (shown when ?game= is in URL) -->
+  <div class="lobby-card" id="join-section">
+    <div style="text-align:center; font-size:40px;">⚔️</div>
+    <h2>Aceitar Batalha</h2>
+    <h3>Você foi desafiado! Código: <span id="join-game-id" style="color:var(--gold);font-weight:900;"></span></h3>
+
+    <div class="input-group">
+      <label>Seu nome</label>
+      <input type="text" id="join-name" placeholder="Ex: Caçador de Gatos" maxlength="24" autocomplete="off" />
+    </div>
+
+    <button class="btn btn-primary" id="btn-accept">🐾 Aceitar Batalha!</button>
+
+    <div class="lobby-error" id="lobby-error"></div>
+  </div>
+
+</div>
+
+<!-- Auto-detect: mock em localhost, Firebase real em produção -->
+<script>
+  (function () {
+    var local = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+    function addScript(src) {
+      document.write('<script src="' + src + '"><\/script>');
+    }
+    if (local) {
+      addScript('js/firebase-mock.js');
+    } else {
+      addScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+      addScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+      addScript('js/firebase-config.js');
+    }
+  })();
+</script>
+<script src="js/cards.js"></script>
+<script src="js/game.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initLobby();
+
+    document.getElementById('create-name')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btn-create')?.click();
+    });
+    document.getElementById('join-name')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btn-accept')?.click();
+    });
+  });
+</script>
+
+</body>
+</html>

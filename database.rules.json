@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "games":           { ".read": true, ".write": true },
+    "pixConfig":       { ".read": true, ".write": true },
+    "pendingPayments": { ".read": true, ".write": true },
+
+    "_adminConfig": {
+      ".read":  false,
+      ".write": false
+    }
+  }
+}
